@@ -30,6 +30,8 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import javassist.NotFoundException;
+import ninja.exceptions.NinjaException;
 /**
  * This controller serves public resources under /public
  * 
@@ -186,7 +188,11 @@ public class AssetsController {
         // check if stream exists. if not print a notfound exception
                 if (url == null) {
 
-                    context.finalizeHeadersWithoutFlashAndSessionCookie(Results.notFound());
+                    throw new NinjaException(
+                            Result.SC_404_NOT_FOUND, 
+                            this.getClass().getSimpleName() 
+                                    + " can not find requested resource "
+                                    + context.getRequestPath());
 
                 } else {
 

@@ -22,11 +22,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;
+import ninja.exceptions.NinjaException;
 
 import ninja.utils.HttpCacheToolkit;
 import ninja.utils.MimeTypes;
 import ninja.utils.NinjaProperties;
 import ninja.utils.ResponseStreams;
+import org.hamcrest.CoreMatchers;
+import static org.hamcrest.CoreMatchers.equalTo;
+import org.junit.Assert;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,49 +65,62 @@ public class AssetsControllerTest {
     @Test
     public void testServeStatic404() throws Exception {
 
-        // test 404 => resource not found.
-        AssetsController assetsController = new AssetsController(
-                httpCacheToolkit, mimeTypes, ninjaProperties);
+        NinjaException ninjaException = null;
+        try { 
 
-        when(contextRenerable.getRequestPath()).thenReturn("notAvailable");
+            // test 404 => resource not found.
+            AssetsController assetsController = new AssetsController(
+                    httpCacheToolkit, mimeTypes, ninjaProperties);
+
+            when(contextRenerable.getRequestPath()).thenReturn("notAvailable");
+
+
+            Result result2 = assetsController.serveStatic(null);
+
+            Renderable renderable = (Renderable) result2.getRenderable();
+
+            Result result = Results.ok();
+
+            renderable.render(contextRenerable, result);
+
+            verify(contextRenerable).finalizeHeadersWithoutFlashAndSessionCookie(resultCaptor.capture());
+            assertTrue(resultCaptor.getValue().getStatusCode() == Result.SC_404_NOT_FOUND);
+
+        } catch (NinjaException ninjaException1) {
+            ninjaException = ninjaException1;
+        }
         
-
-        Result result2 = assetsController.serveStatic(null);
-
-        Renderable renderable = (Renderable) result2.getRenderable();
-
-        Result result = Results.ok();
-
-        renderable.render(contextRenerable, result);
-
-        verify(contextRenerable).finalizeHeadersWithoutFlashAndSessionCookie(resultCaptor.capture());
-        assertTrue(resultCaptor.getValue().getStatusCode() == Result.SC_404_NOT_FOUND);
-
+        assertThat(ninjaException.getHttpStatus(), equalTo(404));
+        
     }
     
     @Test
     public void testServeStaticSecurityClassesWithoutSlash() throws Exception {
-
-        // test 404 => resource not found.
-        AssetsController assetsController = new AssetsController(
+        
+        NinjaException ninjaException = null;
+        try {
+            // test 404 => resource not found.
+            AssetsController assetsController = new AssetsController(
                 httpCacheToolkit, mimeTypes, ninjaProperties);
 
-        when(contextRenerable.getRequestPath()).thenReturn("ninja/Ninja.class");
+            when(contextRenerable.getRequestPath()).thenReturn("ninja/Ninja.class");
         
-        Result result2 = assetsController.serveStatic(null);
+            Result result2 = assetsController.serveStatic(null);
 
-        Renderable renderable = (Renderable) result2.getRenderable();
+            Renderable renderable = (Renderable) result2.getRenderable();
 
-        Result result = Results.ok();
+            Result result = Results.ok();
 
-        renderable.render(contextRenerable, result);
+            renderable.render(contextRenerable, result);
+        } catch (NinjaException ninjaException1) {
+            ninjaException = ninjaException1;
+        }
+        
+        assertThat(ninjaException.getHttpStatus(), equalTo(404));
 
-        verify(contextRenerable).finalizeHeadersWithoutFlashAndSessionCookie(resultCaptor.capture());
-        assertTrue(resultCaptor.getValue().getStatusCode() == Result.SC_404_NOT_FOUND);
 
     }
     
-    @Test
     public void testServeStaticSecurityClassesAbsolute() throws Exception {
 
         // test 404 => resource not found.
@@ -126,24 +144,30 @@ public class AssetsControllerTest {
     @Test
     public void testServeStaticSecurityNoRelativPathWorks() throws Exception {
 
-        // test 404 => resource not found.
-        AssetsController assetsController = new AssetsController(
-                httpCacheToolkit, mimeTypes, ninjaProperties);
+        NinjaException ninjaException = null;
+        try { 
 
-        //This theoretically could work as robots.txt is there..
-        // But it should
-        when(contextRenerable.getRequestPath()).thenReturn("/assets/../../conf/heroku.conf");
+            // test 404 => resource not found.
+            AssetsController assetsController = new AssetsController(
+                    httpCacheToolkit, mimeTypes, ninjaProperties);
+
+            //This theoretically could work as robots.txt is there..
+            // But it should
+            when(contextRenerable.getRequestPath()).thenReturn("/assets/../../conf/heroku.conf");
+
+            Result result2 = assetsController.serveStatic(null);
+
+            Renderable renderable = (Renderable) result2.getRenderable();
+
+            Result result = Results.ok();
+
+            renderable.render(contextRenerable, result);
+
+        } catch (NinjaException ninjaException1) {
+            ninjaException = ninjaException1;
+        }
         
-        Result result2 = assetsController.serveStatic(null);
-
-        Renderable renderable = (Renderable) result2.getRenderable();
-
-        Result result = Results.ok();
-
-        renderable.render(contextRenerable, result);
-
-        verify(contextRenerable).finalizeHeadersWithoutFlashAndSessionCookie(resultCaptor.capture());
-        assertTrue(resultCaptor.getValue().getStatusCode() == Result.SC_404_NOT_FOUND);
+        assertThat(ninjaException.getHttpStatus(), equalTo(404));
 
     }
 
@@ -278,23 +302,31 @@ public class AssetsControllerTest {
     @Test
     public void testAssetsController404() throws Exception {
 
-        // test 404 => resource not found.
-        AssetsController assetsController = new AssetsController(
-                httpCacheToolkit, mimeTypes, ninjaProperties);
+        NinjaException ninjaException = null;
+        try { 
+            
+            // test 404 => resource not found.
+            AssetsController assetsController = new AssetsController(
+                    httpCacheToolkit, mimeTypes, ninjaProperties);
 
-        when(contextRenerable.getRequestPath()).thenReturn("notAvailable");
+            when(contextRenerable.getRequestPath()).thenReturn("notAvailable");
+
+
+            Result result2 = assetsController.serve(null);
+
+            Renderable renderable = (Renderable) result2.getRenderable();
+
+            Result result = Results.ok();
+
+            renderable.render(contextRenerable, result);
+
+            verify(contextRenerable).finalizeHeadersWithoutFlashAndSessionCookie(resultCaptor.capture());
+            assertTrue(resultCaptor.getValue().getStatusCode() == Result.SC_404_NOT_FOUND);
+        } catch (NinjaException ninjaException1) {
+            ninjaException = ninjaException1;
+        }
         
-
-        Result result2 = assetsController.serve(null);
-
-        Renderable renderable = (Renderable) result2.getRenderable();
-
-        Result result = Results.ok();
-
-        renderable.render(contextRenerable, result);
-
-        verify(contextRenerable).finalizeHeadersWithoutFlashAndSessionCookie(resultCaptor.capture());
-        assertTrue(resultCaptor.getValue().getStatusCode() == Result.SC_404_NOT_FOUND);
+        assertThat(ninjaException.getHttpStatus(), equalTo(404));
 
     }
     

@@ -49,7 +49,7 @@ public class NotFoundTest extends NinjaDocTester {
 		assertEquals(404, response.httpStatus);
 		
 		assertTrue(response.payload
-				.contains("The requested route cannot be found."));
+				.contains(NinjaConstant.I18N_NINJA_SYSTEM_NOT_FOUND_TEXT_DEFAULT));
 
 	}
     

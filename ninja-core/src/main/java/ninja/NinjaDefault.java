@@ -26,6 +26,8 @@ import ninja.lifecycle.LifecycleService;
 
 import com.google.inject.Inject;
 import ninja.exceptions.BadRequestException;
+import ninja.exceptions.InternalServerErrorException;
+import ninja.exceptions.NinjaException;
 import ninja.i18n.Lang;
 import ninja.i18n.Messages;
 import ninja.utils.Message;
@@ -104,16 +106,27 @@ public class NinjaDefault implements Ninja {
     @Override
     public Result onException(Context context, Exception exception) {
         
-        Result result;
+        Result result = null;
         
-        if (exception instanceof BadRequestException) {
+        if (exception instanceof NinjaException) {
             
-            result = getBadRequestResult(context, exception);
+            NinjaException ninjaException = (NinjaException) exception;
+            int httpStatus = ninjaException.getHttpStatus();
+            
+            if (httpStatus == Result.SC_400_BAD_REQUEST) {
+                result = getBadRequestResult(context, exception);
+            } else if (httpStatus == Result.SC_403_FORBIDDEN) {
+                result = getForbiddenResult(context);
+            } else if (httpStatus == Result.SC_404_NOT_FOUND) {
+                result = getNotFoundResult(context);
+            } else if (httpStatus == Result.SC_500_INTERNAL_SERVER_ERROR) {
+                result = getInternalServerErrorResult(context, exception);
+            } 
         
-        } else {
-            
-            result = getInternalServerErrorResult(context, exception);
-
+        } 
+        
+        if (result == null) {  
+           result = getInternalServerErrorResult(context, exception);
         }
         
         return result;

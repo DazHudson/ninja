@@ -18,6 +18,7 @@ package example;
 
 import static org.junit.Assert.assertTrue;
 import ninja.NinjaFluentLeniumTest;
+import ninja.utils.NinjaConstant;
 
 import org.junit.Test;
 
@@ -37,7 +38,9 @@ public class ExampleIntegrationTest extends NinjaFluentLeniumTest {
 
         goTo(getServerAddress() + "/assets/css/INVALID_FILE");
 
-        assertTrue(pageSource().isEmpty());
+        assertTrue(pageSource().contains(
+                NinjaConstant.I18N_NINJA_SYSTEM_NOT_FOUND_TEXT_DEFAULT));
+        
 
     }
 

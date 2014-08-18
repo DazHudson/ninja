@@ -29,14 +29,20 @@ package ninja.exceptions;
  */
 public class NinjaException extends RuntimeException {  
     
-    int httpStatus;
+    private final int httpStatus;
     
     public NinjaException(int httpStatus, String httpMessage) {
         super(httpMessage);
+        this.httpStatus = httpStatus;
     }
 
     public NinjaException(int httpStatus, String httpMessage, Throwable cause) {
         super(httpMessage, cause);
+        this.httpStatus = httpStatus;
+    }
+    
+    public int getHttpStatus() {
+        return httpStatus;       
     }
 
 }

@@ -31,17 +31,17 @@ import ninja.exceptions.InternalServerErrorException;
 import ninja.template.TemplateEngine;
 import ninja.template.TemplateEngineManager;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 @Singleton
 public class ResultHandler {
 
     private final TemplateEngineManager templateEngineManager;
-    private final Logger logger;
+    private final Logger logger = LoggerFactory.getLogger(ResultHandler.class);
 
     @Inject
-    public ResultHandler(Logger logger, TemplateEngineManager templateEngineManager) {
-        this.logger = logger;
+    public ResultHandler(TemplateEngineManager templateEngineManager) {
         this.templateEngineManager = templateEngineManager;
     }
 
@@ -60,12 +60,6 @@ public class ResultHandler {
             // results you want to set...
             handleRenderable((Renderable) objectToBeRendered, context, result);
         } else {
-            
-            // if content type is not yet set in result we copy it over from the
-            // request accept header
-            if (result.getContentType() == null) {
-                result.contentType(context.getAcceptContentType());
-            }
             
             // If result does not contain a Cache-control: ... header
             // we disable caching of this response by calling doNotCacheContent().
@@ -96,9 +90,19 @@ public class ResultHandler {
     }
 
     private void renderWithTemplateEngineOrRaw(Context context, Result result) {
+        
+        // if content type is not yet set in result we copy it over from the
+        // request accept header
+        String contentTypeForRendering;
+        if (result.contentTypes().contains(context.getAcceptContentType())) {
+            contentTypeForRendering = context.getAcceptContentType();
+        } else {
+            contentTypeForRendering = result.contentTypeDefault();
+        }
+            
         // try to get a suitable rendering engine...
         TemplateEngine templateEngine = templateEngineManager
-                .getTemplateEngineForContentType(result.getContentType());
+                .getTemplateEngineForContentType(contentTypeForRendering);
 
         if (templateEngine != null) {
 
@@ -106,53 +110,8 @@ public class ResultHandler {
 
         } else {
 
-            if (result.getRenderable() instanceof String) {
-                
-                // Simply write it out
-                
-                if (result.getContentType() == null) {
-                    // if content type not explicitly set, text/plain is a good default value:
-                    result.contentType(Result.TEXT_PLAIN);
-                }
-                
-                ResponseStreams responseStreams = context
-                    .finalizeHeaders(result);
-
-                try (Writer writer = responseStreams.getWriter()) {
-                    
-                    writer.write((String) result.getRenderable());
-
-                } catch (IOException ioException) {
-                    throw new InternalServerErrorException(ioException);
-                }
-
-            } else if (result.getRenderable() instanceof byte[]) {
-                
-                // If content type not explicitly set, application/octet-stream 
-                // is a good default value:
-                if (result.getContentType() == null) {
-                    result.contentType(Result.APPLICATION_OCTET_STREAM);
-                }
-                
-                ResponseStreams responseStreams = context
-                        .finalizeHeaders(result);
-                
-                try (OutputStream outputStream = responseStreams.getOutputStream()) {
-
-                    outputStream.write((byte[]) result.getRenderable());
-                    
-                } catch (IOException ioException) {
-                    throw new InternalServerErrorException(ioException);
-                }
-                
-            } else {
-                
-                context.finalizeHeaders(result);
-                
-                throw new InternalServerErrorException(
-                        "No template engine found for result content type "
-                                + result.getContentType());
-            }
+            throw new InternalServerErrorException(
+                    "No template engine found for result content type " + result.contentTypeDefault());
         }
     }
 

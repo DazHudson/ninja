@@ -65,13 +65,10 @@ public class ResultHandlerTest {
     @Mock
     private Context context;
 
-    @Mock
-    Logger logger;
-
     @Before
     public void init() throws Exception {
 
-        resultHandler = new ResultHandler(logger, templateEngineManager);
+        resultHandler = new ResultHandler(templateEngineManager);
         when(responseStreams.getOutputStream()).thenReturn(outputStream);
         when(responseStreams.getWriter()).thenReturn(writer);
         when(context.finalizeHeaders(any(Result.class))).thenReturn(
@@ -137,8 +134,8 @@ public class ResultHandlerTest {
     @Test
     public void testRenderPlainStringAndSetDefaultContentType() {
         final String toRender = "this is just a plain string";
-        Result result = Results.ok();
-        result.render(toRender);
+        Result result = Results.text();
+        result.renderRaw(toRender);
         resultHandler.handleResult(result, context);
         assertEquals(Result.TEXT_PLAIN, result.getContentType());
     }
@@ -158,7 +155,7 @@ public class ResultHandlerTest {
         final String contentType = "any/contenttype";
         Result result = Results.ok();
         result.contentType(contentType);
-        result.render(toRender);
+        result.renderRaw(toRender);
         resultHandler.handleResult(result, context);
         assertEquals(contentType, result.getContentType());
     }
@@ -169,7 +166,7 @@ public class ResultHandlerTest {
         final String contentType = "image/png";
         Result result = Results.ok();
         result.contentType(contentType);
-        result.render(toRender);
+        result.renderRaw(toRender);
         resultHandler.handleResult(result, context);
         assertEquals(contentType, result.getContentType());
     }

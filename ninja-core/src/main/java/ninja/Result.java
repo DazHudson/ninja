@@ -16,6 +16,7 @@
 
 package ninja;
 
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.AbstractMap;
@@ -33,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.io.OutputStream;
 
 public class Result {
     
@@ -99,7 +101,9 @@ public class Result {
     /**
      * Something like: "text/html" or "application/json"
      */
-    private String contentType;
+    private List<String> contentTypes = Lists.newArrayList();
+    
+    private List<String> DEFAULT_CONTENT_TYPES = ImmutableList.of(TEXT_HTML, APPLICATON_JSON, APPLICATION_XML);
 
     /**
      * Something like: "utf-8" => will be appended to the content-type. eg
@@ -352,9 +356,57 @@ public class Result {
         return this;
         
     }
+    
+    public Result renderRaw(final byte [] bytes) {
+ 
+        Renderable renderable = new Renderable() {
+ 
+            @Override
+            public void render(Context context, Result result) {
+ 
+                ResponseStreams resultJsonCustom = context
+                        .finalizeHeaders(result);
+                
+                try (OutputStream outputStream = resultJsonCustom.getOutputStream()) {
+                
+                    outputStream.write(bytes);
+                    
+                } catch (IOException ioException) {
+                
+                    logger.error(
+                            "Error rendering raw bytes [] via renderRaw(...)", 
+                            ioException);
+                }
+ 
+            }
+        };
+ 
+        render(renderable);
+ 
+        return this;
+        
+    }
 
+    /**
+     * Use contentTypes() instead.
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public String getContentType() {
-        return contentType;
+        return contentTypeDefault();
+    }
+    
+    public String contentTypeDefault() {
+        return contentTypes().get(0);
+    }
+    
+    public List<String> contentTypes() {
+        if (this.contentTypes.isEmpty()) {
+            return DEFAULT_CONTENT_TYPES;
+        } else {
+            return this.contentTypes;
+        }
     }
 
     /**
@@ -380,7 +432,7 @@ public class Result {
      */
     @Deprecated
     public Result setContentType(String contentType) {
-        this.contentType = contentType;
+        this.contentTypes.add(contentType);
         return this;
     }
 
@@ -395,7 +447,7 @@ public class Result {
      *            "application/json"
      */
     public Result contentType(String contentType) {
-        this.contentType = contentType;
+        this.contentTypes.add(contentType);
         return this;
     }
 
@@ -510,7 +562,7 @@ public class Result {
      * @return the same result where you executed this method on. But the content type is now {@link Result#TEXT_HTML}.
      */
     public Result html() {
-        contentType = TEXT_HTML;
+        this.contentTypes.add(TEXT_HTML);
         return this;
     }
 
@@ -520,7 +572,7 @@ public class Result {
      * @return the same result where you executed this method on. But the content type is now {@link Result#APPLICATON_JSON}.
      */
     public Result json() {
-        contentType = APPLICATON_JSON;
+        this.contentTypes.add(APPLICATON_JSON);
         return this;
     }
 
@@ -530,7 +582,7 @@ public class Result {
      * @return the same result where you executed this method on. But the content type is now {@link Result#APPLICATON_JSONP}.
      */
     public Result jsonp() {
-        contentType = APPLICATON_JSONP;
+        this.contentTypes.add(APPLICATON_JSONP);
         return this;
     }
     
@@ -540,7 +592,7 @@ public class Result {
      * @return the same result where you executed this method on. But the content type is now {@link Result#APPLICATON_XML}.
      */
     public Result xml() {
-        contentType = APPLICATION_XML;
+        this.contentTypes.add(APPLICATION_XML);
         return this;
     }
     

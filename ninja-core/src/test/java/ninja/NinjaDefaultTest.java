@@ -232,7 +232,7 @@ public class NinjaDefaultTest {
                 new Exception("not important"));
         
         assertThat(result.getStatusCode(), equalTo(Result.SC_500_INTERNAL_SERVER_ERROR));
-        assertThat("we perform content-negotiation because", result.getContentType(), equalTo(null));
+        assertThat("we perform content-negotiation because", result.contentTypes().size(), equalTo(3));
         assertThat(result.getTemplate(), equalTo(NinjaConstant.LOCATION_VIEW_FTL_HTML_INTERNAL_SERVER_ERROR));
         assertTrue(result.getRenderable() instanceof Message);
 
@@ -253,7 +253,7 @@ public class NinjaDefaultTest {
                 new BadRequestException("not important"));
         
         assertThat(result.getStatusCode(), equalTo(Result.SC_400_BAD_REQUEST));
-        assertThat("we perform content-negotiation because", result.getContentType(), equalTo(null));
+        assertThat("we perform content-negotiation because", result.contentTypes().size(), equalTo(3));
         assertThat(result.getTemplate(), equalTo(NinjaConstant.LOCATION_VIEW_FTL_HTML_BAD_REQUEST));
         assertTrue(result.getRenderable() instanceof Message);
 
@@ -271,7 +271,7 @@ public class NinjaDefaultTest {
         Result result = ninjaDefault.getNotFoundResult(contextImpl);
         
         assertThat(result.getStatusCode(), equalTo(Result.SC_404_NOT_FOUND));
-        assertThat("we perform content-negotiation because", result.getContentType(), equalTo(null));
+        assertThat("we perform content-negotiation because", result.contentTypes().size(), equalTo(3));
         assertThat(result.getTemplate(), equalTo(NinjaConstant.LOCATION_VIEW_FTL_HTML_NOT_FOUND));
         assertTrue(result.getRenderable() instanceof Message);
         
